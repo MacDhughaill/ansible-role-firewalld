@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- {{ ansible_managed }} -->
+<!-- {{ template_run_date }} -->
+<service>
+{% if item.short is defined %}
+  <short>{{ item.short }}</short>
+{% endif %}
+{% if item.description is defined %}
+  <description>{{ item.description }}</description>
+{% endif %}
+{% for port in item.ports %}
+  <port protocol="{{ port.type | default('tcp') }}" port="{{ port.number }}"/>
+{% endfor %}
+</service>

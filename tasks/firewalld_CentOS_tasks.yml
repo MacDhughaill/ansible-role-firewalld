@@ -1,0 +1,7 @@
+---
+- name: Install python bindings for firewalld
+  yum:
+    name: python-firewall
+    state: present
+    update_cache: true
+  become: true

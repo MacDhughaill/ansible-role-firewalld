@@ -1,0 +1,68 @@
+---
+- service_facts:
+# Names for firewalld service units are accurate on CentOS.
+# Other distributions need to be tested.
+- name: Verify the firewalld service is operational
+  fail:
+    msg: "The firewalld service does not appear to be running."
+  when: (ansible_facts.services['firewalld.service'] is undefined) or
+        (ansible_facts.services['firewalld.service'].state != "running")
+
+- include_tasks: "firewalld_{{ ansible_distribution }}_tasks.yml"
+
+- block:
+  - name: Copy templates of custom firewall services
+    template:
+      src: firewalld_service.xml.j2
+      dest: "/etc/firewalld/services/{{ item.name }}.xml"
+      backup: true
+    with_items: "{{ firewalld_custom_services }}"
+    when: firewalld_custom_services is defined
+
+  - name: Reload firewalld to discover new firewall exceptions
+    systemd:
+      name: firewalld
+      state: reloaded
+    when: firewalld_custom_services is defined
+
+  - name: Add new service exceptions to firewalld zones
+    firewalld:
+      zone: "{{ item.0.name }}"
+      immediate: true
+      permanent: true
+      state: enabled
+      service: "{{ item.1 | default(omit) }}"
+    with_subelements:
+      - "{{ firewalld_zones }}"
+      - services
+      - skip_missing: true
+
+  - name: Assign network interfaces to firewalld zones
+    firewalld:
+      zone: "{{ item.0.name }}"
+      immediate: true
+      permanent: true
+      state: enabled
+      interface: "{{ item.1 }}"
+    with_subelements:
+      - "{{ firewalld_zones }}"
+      - interfaces
+      - skip_missing: true
+
+  - name: Remove service exceptions to firewalld zones
+    firewalld:
+      zone: "{{ item.0.name }}"
+      immediate: true
+      permanent: true
+      state: disabled
+      service: "{{ item.1 }}"
+    with_subelements:
+      - "{{ firewalld_zones }}"
+      - services_disabled
+      - skip_missing: true
+
+  - name: Restart the firewalld service
+    systemd:
+      name: firewalld
+      state: restarted
+  become: true

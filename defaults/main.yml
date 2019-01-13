@@ -1,0 +1,16 @@
+---
+#firewalld_custom_services:
+#  - name:
+#    short:
+#    description:
+#    ports:
+#      - number:
+#      - type:
+firewalld_zones:
+  - name:
+    interfaces:
+      -
+    services:
+      -
+    services_disabled:
+      -

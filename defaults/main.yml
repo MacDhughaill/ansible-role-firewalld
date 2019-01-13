@@ -6,11 +6,11 @@
 #    ports:
 #      - number:
 #      - type:
-firewalld_zones:
-  - name:
-    interfaces:
-      -
-    services:
-      -
-    services_disabled:
-      -
+#firewalld_zones:
+#  - name:
+#    interfaces:
+#      -
+#    services:
+#      -
+#    services_disabled:
+#      -
